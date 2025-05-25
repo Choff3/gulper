@@ -3,6 +3,7 @@ package gulpers
 import (
 	"fmt"
 
+	"github.com/Choff3/gulper/utils"
 	"github.com/gocolly/colly"
 )
 
@@ -36,7 +37,12 @@ func getMenu() string {
 }
 
 func GetPorterBeers() string {
-	menu := getMenu()
 
-	return menu
+	prompt := "When was golang invented?"
+	// url := getMenu()
+
+	// beers := utils.GetBeers(url, prompt)
+	beers := utils.GetBeers(prompt)
+
+	return beers
 }
