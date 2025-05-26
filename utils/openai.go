@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -87,9 +86,11 @@ func GetBeers(prompt string) string {
 	defer resp.Body.Close() // Ensure the response body is closed
 
 	// Read the response body
-	responseBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalf("Error reading response body: %v", err)
+
+	responseBody := &GeminiResponse{}
+	derr := json.NewDecoder(resp.Body).Decode(responseBody)
+	if derr != nil {
+		panic(derr)
 	}
 
 	// Check for HTTP errors
@@ -97,25 +98,7 @@ func GetBeers(prompt string) string {
 		log.Fatalf("Gemini API returned an error: Status %d, Response: %s", resp.StatusCode, responseBody)
 	}
 
-	// Unmarshal the JSON response
-	var geminiResponse GeminiResponse
-	err = json.Unmarshal(responseBody, &geminiResponse)
-	if err != nil {
-		log.Fatalf("Error unmarshaling response payload: %v", err)
-	}
-
-	// Process and return the response
-	var beers string
-	fmt.Println("Processing Gemini response...")
-	if len(geminiResponse.Candidates) > 0 {
-		if len(geminiResponse.Candidates[0].Content.Parts) > 0 {
-			beers = geminiResponse.Candidates[0].Content.Parts[0].Text
-		} else {
-			fmt.Println("No content parts found in the Gemini response.")
-		}
-	} else {
-		fmt.Println("No candidates found in the Gemini response.")
-	}
+	beers := responseBody.Candidates[0].Content.Parts[0].Text
 
 	return beers
 }

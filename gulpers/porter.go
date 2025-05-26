@@ -38,11 +38,13 @@ func getMenu() string {
 
 func GetPorterBeers() string {
 
-	prompt := "When was golang invented?"
-	// url := getMenu()
+	url := getMenu()
+	prompt := "Get a list of all the beers on this menu and return each of them in an array of JSONs with each column as a key. The keys are: name, brewery, style, abv, description, and price."
+	// Construct the full URL with the API key
+	fullPrompt := fmt.Sprintf("%s %s", prompt, url)
 
 	// beers := utils.GetBeers(url, prompt)
-	beers := utils.GetBeers(prompt)
+	beers := utils.GetBeers(fullPrompt)
 
 	return beers
 }
