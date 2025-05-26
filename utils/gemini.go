@@ -53,12 +53,7 @@ func GetBeersPDF(url string) string {
 		Backend: genai.BackendGeminiAPI,
 	})
 
-	pdfResp, _ := http.Get("https://www.theporterbeerbar.com/wordpress/wp-content/uploads/2025/05/MAY-17-DRAFT-MENU.pdf")
-	var pdfBytes []byte
-	if pdfResp != nil && pdfResp.Body != nil {
-		pdfBytes, _ = io.ReadAll(pdfResp.Body)
-		pdfResp.Body.Close()
-	}
+	pdfBytes := getPDF(url)
 
 	parts := []*genai.Part{
 		&genai.Part{
@@ -84,7 +79,7 @@ func GetBeersPDF(url string) string {
 	return result.Text()
 }
 
-func GetRequest(url string) string {
+func getPDF(url string) []byte {
 	client := &http.Client{}
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -92,7 +87,7 @@ func GetRequest(url string) string {
 		log.Fatalln(err)
 	}
 
-	req.Header.Set("User-Agent", "Golang_Spider_Bot/3.0")
+	req.Header.Set("User-Agent", GetUserAgent())
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -100,12 +95,12 @@ func GetRequest(url string) string {
 	}
 
 	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
+	pdfBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	return string(body)
+	return pdfBytes
 }
 
 func GetUserAgent() string {
