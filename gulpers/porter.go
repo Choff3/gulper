@@ -13,7 +13,7 @@ func getMenu() string {
 
 	// Instantiate default collector
 	c := colly.NewCollector(
-		colly.UserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:138.0) Gecko/20100101 Firefox/138.0"),
+		colly.UserAgent(GetUserAgent()),
 	)
 
 	// On every a element which has href attribute call callback

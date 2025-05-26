@@ -3,7 +3,9 @@ package utils
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"os"
 
 	"google.golang.org/genai"
@@ -44,32 +46,68 @@ func GetBeersHTML(url string) string {
 }
 
 func GetBeersPDF(url string) string {
-	// Get Gemini API Key from Environment Variable
-	apiKey := os.Getenv("GEMINI_API_KEY")
-	if apiKey == "" {
-		log.Fatal("Error: GEMINI_API_KEY environment variable not set. Please set it before running.")
-	}
-
-	prompt := fmt.Sprintf("%s %s", basePrompt, url)
 
 	ctx := context.Background()
-	client, err := genai.NewClient(ctx, &genai.ClientConfig{
-		APIKey:  apiKey,
+	client, _ := genai.NewClient(ctx, &genai.ClientConfig{
+		APIKey:  os.Getenv("GEMINI_API_KEY"),
 		Backend: genai.BackendGeminiAPI,
 	})
-	if err != nil {
-		log.Fatal(err)
+
+	pdfResp, _ := http.Get("https://www.theporterbeerbar.com/wordpress/wp-content/uploads/2025/05/MAY-17-DRAFT-MENU.pdf")
+	var pdfBytes []byte
+	if pdfResp != nil && pdfResp.Body != nil {
+		pdfBytes, _ = io.ReadAll(pdfResp.Body)
+		pdfResp.Body.Close()
 	}
 
-	result, err := client.Models.GenerateContent(
+	parts := []*genai.Part{
+		&genai.Part{
+			InlineData: &genai.Blob{
+				MIMEType: "application/pdf",
+				Data:     pdfBytes,
+			},
+		},
+		genai.NewPartFromText("Summarize this document."),
+	}
+
+	contents := []*genai.Content{
+		genai.NewContentFromParts(parts, genai.RoleUser),
+	}
+
+	result, _ := client.Models.GenerateContent(
 		ctx,
 		"gemini-2.0-flash",
-		genai.Text(prompt),
+		contents,
 		nil,
 	)
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	return result.Text()
+}
+
+func GetRequest(url string) string {
+	client := &http.Client{}
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	req.Header.Set("User-Agent", "Golang_Spider_Bot/3.0")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	return string(body)
+}
+
+func GetUserAgent() string {
+	return "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:138.0) Gecko/20100101 Firefox/138.0"
 }
