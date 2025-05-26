@@ -1,104 +1,75 @@
 package utils
 
 import (
-	"bytes"
-	"encoding/json"
+	"context"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
+
+	"google.golang.org/genai"
 )
 
-// Gemini API endpoint for generateContent
-const geminiAPIURL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+const basePrompt = "Get a list of all the beers on this menu and return each of them in an array of JSONs with each column as a key. " +
+	"The keys are: name, brewery, style, abv, description, and price."
 
-// Request payload structure for Gemini API
-type GeminiRequest struct {
-	Contents []Content `json:"contents"`
-}
-
-type Content struct {
-	Parts []Part `json:"parts"`
-}
-
-type Part struct {
-	Text string `json:"text"`
-}
-
-// Response payload structure from Gemini API (simplified for this example)
-type GeminiResponse struct {
-	Candidates []Candidate `json:"candidates"`
-	// Add other fields like promptFeedback, usageMetadata if needed
-}
-
-type Candidate struct {
-	Content Content `json:"content"`
-	// Add other fields like safetyRatings, finishReason if needed
-}
-
-func GetBeers(prompt string) string {
+func GetBeersHTML(url string) string {
 	// Get Gemini API Key from Environment Variable
 	apiKey := os.Getenv("GEMINI_API_KEY")
 	if apiKey == "" {
-		log.Fatal("Error: OPENAI_API_KEY environment variable not set. Please set it before running.")
+		log.Fatal("Error: GEMINI_API_KEY environment variable not set. Please set it before running.")
 	}
 
-	// Construct the request payload
-	requestPayload := GeminiRequest{
-		Contents: []Content{
-			{
-				Parts: []Part{
-					{
-						Text: prompt,
-					},
-				},
-			},
-		},
-	}
+	prompt := fmt.Sprintf("%s %s", basePrompt, url)
 
-	// Marshal the request payload to JSON
-	jsonPayload, err := json.Marshal(requestPayload)
+	ctx := context.Background()
+	client, err := genai.NewClient(ctx, &genai.ClientConfig{
+		APIKey:  apiKey,
+		Backend: genai.BackendGeminiAPI,
+	})
 	if err != nil {
-		log.Fatalf("Error marshaling request payload: %v", err)
+		log.Fatal(err)
 	}
 
-	// Construct the full URL with the API key
-	fullURL := fmt.Sprintf("%s?key=%s", geminiAPIURL, apiKey)
-
-	// Create an HTTP client
-	client := &http.Client{}
-
-	// Create the HTTP request
-	req, err := http.NewRequest("POST", fullURL, bytes.NewBuffer(jsonPayload))
+	result, err := client.Models.GenerateContent(
+		ctx,
+		"gemini-2.0-flash",
+		genai.Text(prompt),
+		nil,
+	)
 	if err != nil {
-		log.Fatalf("Error creating HTTP request: %v", err)
+		log.Fatal(err)
 	}
 
-	// Set request headers
-	req.Header.Set("Content-Type", "application/json")
+	return result.Text()
+}
 
-	// Send the HTTP request
-	fmt.Println("Sending request to Gemini API...")
-	resp, err := client.Do(req)
+func GetBeersPDF(url string) string {
+	// Get Gemini API Key from Environment Variable
+	apiKey := os.Getenv("GEMINI_API_KEY")
+	if apiKey == "" {
+		log.Fatal("Error: GEMINI_API_KEY environment variable not set. Please set it before running.")
+	}
+
+	prompt := fmt.Sprintf("%s %s", basePrompt, url)
+
+	ctx := context.Background()
+	client, err := genai.NewClient(ctx, &genai.ClientConfig{
+		APIKey:  apiKey,
+		Backend: genai.BackendGeminiAPI,
+	})
 	if err != nil {
-		log.Fatalf("Error sending HTTP request: %v", err)
-	}
-	defer resp.Body.Close() // Ensure the response body is closed
-
-	// Read the response body
-
-	responseBody := &GeminiResponse{}
-	derr := json.NewDecoder(resp.Body).Decode(responseBody)
-	if derr != nil {
-		panic(derr)
+		log.Fatal(err)
 	}
 
-	// Check for HTTP errors
-	if resp.StatusCode != http.StatusOK {
-		log.Fatalf("Gemini API returned an error: Status %d, Response: %s", resp.StatusCode, responseBody)
+	result, err := client.Models.GenerateContent(
+		ctx,
+		"gemini-2.0-flash",
+		genai.Text(prompt),
+		nil,
+	)
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	beers := responseBody.Candidates[0].Content.Parts[0].Text
-
-	return beers
+	return result.Text()
 }

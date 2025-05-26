@@ -38,13 +38,9 @@ func getMenu() string {
 
 func GetPorterBeers() string {
 
-	url := getMenu()
-	prompt := "Get a list of all the beers on this menu and return each of them in an array of JSONs with each column as a key. The keys are: name, brewery, style, abv, description, and price."
-	// Construct the full URL with the API key
-	fullPrompt := fmt.Sprintf("%s %s", prompt, url)
+	url := "https://www.theporterbeerbar.com/wordpress/wp-content/uploads/2025/05/MAY-17-DRAFT-MENU.pdf" //getMenu()
 
-	// beers := utils.GetBeers(url, prompt)
-	beers := utils.GetBeers(fullPrompt)
+	beers := utils.GetBeersPDF(url)
 
 	return beers
 }
