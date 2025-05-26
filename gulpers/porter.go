@@ -37,10 +37,11 @@ func getMenu() string {
 }
 
 func GetPorterBeers() string {
+	prompt := "The brewery name comes first, then a dot is used to separate the brewery name from from the beer name."
 
-	url := "https://www.theporterbeerbar.com/wordpress/wp-content/uploads/2025/05/MAY-17-DRAFT-MENU.pdf" //getMenu()
+	url := getMenu()
 
-	beers := utils.GetBeersPDF(url)
+	beers := utils.GetBeersPDF(url, prompt)
 
 	return beers
 }

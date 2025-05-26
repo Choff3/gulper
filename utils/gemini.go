@@ -11,17 +11,18 @@ import (
 	"google.golang.org/genai"
 )
 
-const basePrompt = "Get a list of all the beers on this menu and return each of them in an array of JSONs with each column as a key. " +
-	"The keys are: name, brewery, style, abv, description, and price."
+const basePrompt = "Get a list of all the beers on this menu and return each of them in an array of JSONs with each attribute as a key. " +
+	"The keys are: name, brewery, style, abv, and price. " +
+	"Store any other information in a separate key based on the label in the menu or description if no label is provided."
 
-func GetBeersHTML(url string) string {
+func GetBeersHTML(url string, addPrompt string) string {
 	// Get Gemini API Key from Environment Variable
 	apiKey := os.Getenv("GEMINI_API_KEY")
 	if apiKey == "" {
 		log.Fatal("Error: GEMINI_API_KEY environment variable not set. Please set it before running.")
 	}
 
-	prompt := fmt.Sprintf("%s %s", basePrompt, url)
+	prompt := fmt.Sprintf("%s %s %s", basePrompt, addPrompt, url)
 
 	ctx := context.Background()
 	client, err := genai.NewClient(ctx, &genai.ClientConfig{
@@ -45,13 +46,15 @@ func GetBeersHTML(url string) string {
 	return result.Text()
 }
 
-func GetBeersPDF(url string) string {
+func GetBeersPDF(url string, addPrompt string) string {
 
 	ctx := context.Background()
 	client, _ := genai.NewClient(ctx, &genai.ClientConfig{
 		APIKey:  os.Getenv("GEMINI_API_KEY"),
 		Backend: genai.BackendGeminiAPI,
 	})
+
+	prompt := fmt.Sprintf("%s %s", basePrompt, addPrompt)
 
 	pdfBytes := getPDF(url)
 
@@ -62,7 +65,7 @@ func GetBeersPDF(url string) string {
 				Data:     pdfBytes,
 			},
 		},
-		genai.NewPartFromText("Summarize this document."),
+		genai.NewPartFromText(prompt),
 	}
 
 	contents := []*genai.Content{
