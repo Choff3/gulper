@@ -8,13 +8,20 @@ import (
 	"github.com/gocolly/colly"
 )
 
-const website = "https://www.theporterbeerbar.com"
+func Porter() string {
+	const website = "https://www.theporterbeerbar.com"
+	const venue = "The Porter"
+	const prompt = "The brewery name comes first, then a • is used to separate the brewery name from from the beer name. When storing style, only store the style not the description that comes after."
 
-const venue = "The Porter"
+	beerStr := gemini.GetMenuPDF(getMenuURL(website), prompt)
 
-const prompt = "The brewery name comes first, then a • is used to separate the brewery name from from the beer name. When storing style, only store the style not the description that comes after."
+	utils.Gulp(beerStr, venue, website, true)
 
-func getMenuURL() string {
+	// TODO: Add error checking
+	return "Success!"
+}
+
+func getMenuURL(website string) string {
 
 	var menu string
 
@@ -41,13 +48,4 @@ func getMenuURL() string {
 	c.Visit(website)
 
 	return menu
-}
-
-func Porter() string {
-	beerStr := gemini.GetMenuPDF(getMenuURL(), prompt)
-
-	utils.Gulp(beerStr, venue, website, true)
-
-	// TODO: Add error checking
-	return "Success!"
 }
