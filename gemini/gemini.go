@@ -43,6 +43,8 @@ func GetMenuHTML(url string, addPrompt string) string {
 		log.Fatal(err)
 	}
 
+	fmt.Println(result.Text())
+
 	return result.Text()
 }
 
