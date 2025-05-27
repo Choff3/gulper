@@ -14,7 +14,6 @@ import (
 
 const basePrompt = "Get a list of all the beers on this menu and return each of them in an array of JSONs with each attribute as a key. " +
 	"The keys are: name, brewery, style, abv, and price."
-	// + "Store any other information in a separate key based on the label in the menu or description if no label is provided."
 
 func GetMenuHTML(url string, addPrompt string) string {
 	// Get Gemini API Key from Environment Variable
@@ -57,7 +56,7 @@ func GetMenuPDF(url string, addPrompt string) string {
 
 	prompt := fmt.Sprintf("%s %s", basePrompt, addPrompt)
 
-	fmt.Println("Fetching menu from", url)
+	fmt.Println("Parsing menu from", url)
 	pdfBytes := getPDF(url)
 
 	parts := []*genai.Part{
@@ -122,9 +121,10 @@ func getConfig() *genai.GenerateContentConfig {
 					"name":    {Type: genai.TypeString},
 					"brewery": {Type: genai.TypeString},
 					"style":   {Type: genai.TypeString},
-					"abv":     {Type: genai.TypeString},
-					"price":   {Type: genai.TypeString},
+					"abv":     {Type: genai.TypeNumber},
+					"price":   {Type: genai.TypeNumber},
 				},
+				PropertyOrdering: []string{"name", "brewery", "style", "abv", "price"},
 			},
 		},
 	}

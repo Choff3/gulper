@@ -12,7 +12,7 @@ const website = "https://www.theporterbeerbar.com"
 
 const venue = "The Porter"
 
-const prompt = "The brewery name comes first, then a dot is used to separate the brewery name from from the beer name."
+const prompt = "The brewery name comes first, then a • is used to separate the brewery name from from the beer name. When storing style, only store the style not the description that comes after."
 
 func getMenuURL() string {
 
@@ -44,9 +44,7 @@ func getMenuURL() string {
 }
 
 func Porter() string {
-	// beerStr := gemini.GetMenuPDF(getMenuURL(), prompt)
-	beerStr := gemini.GetMenuPDF("https://www.theporterbeerbar.com/wordpress/wp-content/uploads/2025/05/MAY-17-DRAFT-MENU.pdf", prompt)
-	fmt.Println("Beer String:\n", beerStr)
+	beerStr := gemini.GetMenuPDF(getMenuURL(), prompt)
 
 	utils.Gulp(beerStr, venue, website, true)
 

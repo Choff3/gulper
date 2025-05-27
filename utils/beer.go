@@ -12,13 +12,13 @@ import (
 )
 
 type Beer struct {
-	Name    string `json:"name" bson:"name"`
-	Brewery string `json:"brewery" bson:"brewery"`
-	Style   string `json:"style" bson:"style"`
-	Abv     string `json:"abv" bson:"abv"`
-	Price   string `json:"price" bson:"price"`
-	Venue   string `json:"venue" bson:"venue"`
-	Url     string `json:"url" bson:"url"`
+	Name    string  `json:"name" bson:"name"`
+	Brewery string  `json:"brewery" bson:"brewery"`
+	Style   string  `json:"style" bson:"style"`
+	Abv     float64 `json:"abv" bson:"abv"`
+	Price   float64 `json:"price" bson:"price"`
+	Venue   string  `json:"venue" bson:"venue"`
+	Url     string  `json:"url" bson:"url"`
 }
 
 func Gulp(beerStr, venue, website string, store bool) []Beer {
