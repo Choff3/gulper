@@ -7,7 +7,13 @@ import (
 	"github.com/gocolly/colly"
 )
 
-func getMenu() string {
+const website = "https://www.theporterbeerbar.com"
+
+const venue = "The Porter"
+
+const prompt = "The brewery name comes first, then a dot is used to separate the brewery name from from the beer name."
+
+func getMenuURL() string {
 
 	var menu string
 
@@ -15,6 +21,11 @@ func getMenu() string {
 	c := colly.NewCollector(
 		colly.UserAgent(utils.GetUserAgent()),
 	)
+
+	// Before making a request print "Visiting ..."
+	c.OnRequest(func(r *colly.Request) {
+		fmt.Println("Visiting", r.URL.String())
+	})
 
 	// On every a element which has href attribute call callback
 	c.OnHTML("a[href]", func(e *colly.HTMLElement) {
@@ -25,28 +36,22 @@ func getMenu() string {
 		}
 	})
 
-	// Before making a request print "Visiting ..."
-	c.OnRequest(func(r *colly.Request) {
-		fmt.Println("Visiting", r.URL.String())
-	})
-
 	// Start scraping
-	c.Visit("https://www.theporterbeerbar.com")
+	c.Visit(website)
 
 	return menu
 }
 
-// func GetPorterBeers() string {
-// 	prompt := "The brewery name comes first, then a dot is used to separate the brewery name from from the beer name."
+func Porter() string {
+	beerStr := testData() //gemini.GetMenuPDF(getMenuURL(), prompt)
 
-// 	url := getMenu()
+	utils.Gulp(beerStr, venue, website, true)
 
-// 	beers := utils.GetBeersPDF(url, prompt)
+	// TODO: Add error checking
+	return "Success!"
+}
 
-// 	return beers
-// }
-
-func GetPorterBeers() string {
+func testData() string {
 	beerString := `
 	[
 	{

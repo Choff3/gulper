@@ -1,4 +1,4 @@
-package utils
+package gemini
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/Choff3/gulper/utils"
 	"google.golang.org/genai"
 )
 
@@ -15,7 +16,7 @@ const basePrompt = "Get a list of all the beers on this menu and return each of 
 	"The keys are: name, brewery, style, abv, and price. "
 	// + "Store any other information in a separate key based on the label in the menu or description if no label is provided."
 
-func GetBeersHTML(url string, addPrompt string) string {
+func GetMenuHTML(url string, addPrompt string) string {
 	// Get Gemini API Key from Environment Variable
 	apiKey := os.Getenv("GEMINI_API_KEY")
 	if apiKey == "" {
@@ -46,7 +47,7 @@ func GetBeersHTML(url string, addPrompt string) string {
 	return result.Text()
 }
 
-func GetBeersPDF(url string, addPrompt string) string {
+func GetMenuPDF(url string, addPrompt string) string {
 
 	ctx := context.Background()
 	client, _ := genai.NewClient(ctx, &genai.ClientConfig{
@@ -90,7 +91,7 @@ func getPDF(url string) []byte {
 		log.Fatalln(err)
 	}
 
-	req.Header.Set("User-Agent", GetUserAgent())
+	req.Header.Set("User-Agent", utils.GetUserAgent())
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -104,8 +105,4 @@ func getPDF(url string) []byte {
 	}
 
 	return pdfBytes
-}
-
-func GetUserAgent() string {
-	return "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:138.0) Gecko/20100101 Firefox/138.0"
 }

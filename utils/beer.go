@@ -1,32 +1,67 @@
 package utils
 
 import (
+	"context"
 	"encoding/json"
 	"log"
+	"os"
+
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Beer struct {
-	Name    string `json:"name"`
-	Brewery string `json:"age"`
-	Style   string `json:"isStudent"`
-	Abv     string `json:"courses"`
-	Price   string `json:"address"`
-	Venue   string `json:"other"`
+	Name    string `json:"name" bson:"name"`
+	Brewery string `json:"brewery" bson:"brewery"`
+	Style   string `json:"style" bson:"style"`
+	Abv     string `json:"abv" bson:"abv"`
+	Price   string `json:"price" bson:"price"`
+	Venue   string `json:"venue" bson:"venue"`
+	Url     string `json:"url" bson:"url"`
 }
 
-func GetBeers(beerString string) []Beer {
+func Gulp(beerStr, venue, website string, store bool) []Beer {
 
-	// 1. Create a slice of the struct type to hold the unmarshaled data
-	var beers []Beer // Declares a slice of Person structs
+	beers := convertString(beerStr)
 
-	// 2. Convert the JSON array string to a byte slice
+	if store {
+		storeBeers(beers, venue, website)
+	}
+	return beers
+}
+
+func convertString(beerString string) []Beer {
+
+	var beers []Beer
+
 	jsonBytes := []byte(beerString)
 
-	// 3. Unmarshal the JSON bytes into the slice of structs
 	err := json.Unmarshal(jsonBytes, &beers)
 	if err != nil {
 		log.Fatalf("Error unmarshaling JSON array: %v", err)
 	}
 
 	return beers
+}
+
+func storeBeers(beers []Beer, venue, url string) {
+	uri := os.Getenv("MONGODB_URI")
+	if uri == "" {
+		log.Fatal("Error: MONGODB_URI environment variable not set. Please set it before running.")
+	}
+	client, _ := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
+	coll := client.Database("gulper").Collection("beers")
+
+	for _, beer := range beers {
+		beer.Venue = venue
+		beer.Url = url
+		_, err := coll.InsertOne(context.TODO(), beer)
+		if err != nil {
+			panic(err)
+		}
+	}
+}
+
+func GetUserAgent() string {
+	return "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:138.0) Gecko/20100101 Firefox/138.0"
 }
