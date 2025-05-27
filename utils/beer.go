@@ -3,6 +3,7 @@ package utils
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 
@@ -25,6 +26,7 @@ func Gulp(beerStr, venue, website string, store bool) []Beer {
 	beers := convertString(beerStr)
 
 	if store {
+		fmt.Printf("Storing %d beers for %s\n", len(beers), venue)
 		storeBeers(beers, venue, website)
 	}
 	return beers

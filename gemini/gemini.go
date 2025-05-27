@@ -13,7 +13,7 @@ import (
 )
 
 const basePrompt = "Get a list of all the beers on this menu and return each of them in an array of JSONs with each attribute as a key. " +
-	"The keys are: name, brewery, style, abv, and price. "
+	"The keys are: name, brewery, style, abv, and price."
 	// + "Store any other information in a separate key based on the label in the menu or description if no label is provided."
 
 func GetMenuHTML(url string, addPrompt string) string {
@@ -38,7 +38,7 @@ func GetMenuHTML(url string, addPrompt string) string {
 		ctx,
 		"gemini-2.0-flash",
 		genai.Text(prompt),
-		nil,
+		getConfig(),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -57,6 +57,7 @@ func GetMenuPDF(url string, addPrompt string) string {
 
 	prompt := fmt.Sprintf("%s %s", basePrompt, addPrompt)
 
+	fmt.Println("Fetching menu from", url)
 	pdfBytes := getPDF(url)
 
 	parts := []*genai.Part{
@@ -73,12 +74,15 @@ func GetMenuPDF(url string, addPrompt string) string {
 		genai.NewContentFromParts(parts, genai.RoleUser),
 	}
 
-	result, _ := client.Models.GenerateContent(
+	result, err := client.Models.GenerateContent(
 		ctx,
 		"gemini-2.0-flash",
 		contents,
-		nil,
+		getConfig(),
 	)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	return result.Text()
 }
@@ -105,4 +109,24 @@ func getPDF(url string) []byte {
 	}
 
 	return pdfBytes
+}
+
+func getConfig() *genai.GenerateContentConfig {
+	config := &genai.GenerateContentConfig{
+		ResponseMIMEType: "application/json",
+		ResponseSchema: &genai.Schema{
+			Type: genai.TypeArray,
+			Items: &genai.Schema{
+				Type: genai.TypeObject,
+				Properties: map[string]*genai.Schema{
+					"name":    {Type: genai.TypeString},
+					"brewery": {Type: genai.TypeString},
+					"style":   {Type: genai.TypeString},
+					"abv":     {Type: genai.TypeString},
+					"price":   {Type: genai.TypeString},
+				},
+			},
+		},
+	}
+	return config
 }
