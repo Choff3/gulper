@@ -15,14 +15,14 @@ import (
 const basePrompt = "Get a list of all the beers on this menu and return each of them in an array of JSONs with each attribute as a key. " +
 	"The keys are: name, brewery, style, abv, and price."
 
-func GetMenuHTML(url string, addPrompt string) string {
+func GetMenuHTML(content string, addPrompt string) string {
 	// Get Gemini API Key from Environment Variable
 	apiKey := os.Getenv("GEMINI_API_KEY")
 	if apiKey == "" {
 		log.Fatal("Error: GEMINI_API_KEY environment variable not set. Please set it before running.")
 	}
 
-	prompt := fmt.Sprintf("%s %s %s", basePrompt, addPrompt, url)
+	prompt := fmt.Sprintf("%s %s %s", basePrompt, addPrompt, content)
 
 	ctx := context.Background()
 	client, err := genai.NewClient(ctx, &genai.ClientConfig{
